@@ -338,15 +338,30 @@
 </head>
 <body>
     <div class="main-container">
-        <div class="header-logo">
+        <div class="header-logo" style="justify-content: space-between;">
             <a href="{% url 'index' %}" style="text-decoration: none; display: flex; align-items: center; color: inherit;">
                 <img src="https://sc01.alicdn.com/kf/Af476ff7174de4cf79ad778fe46cc2de7Q.jpg" alt="RD CONILON LOGO">
                 <div>
                     <h1>FAZENDA360</h1>
                     <div style="font-size: 10px; color: #94a3b8; font-weight: bold; letter-spacing: 2px;">SISTEMA ATUALIZADO v2.0</div>
-                    <div style="height: 4px; background: linear-gradient(90deg, var(--primary-brown) 0%, transparent 100%); width: 200px; border-radius: 2px; margin-top: 5px;"></div>
+                    <div style="height: 4px; background: linear-gradient(90deg, var(--primary-brown) 0%, transparent 100%); width: 100%; border-radius: 2px; margin-top: 5px;"></div>
                 </div>
             </a>
+            
+            {% if user.is_authenticated %}
+            <div class="user-controls" style="display: flex; align-items: center; gap: 15px;">
+                <div class="text-right d-none d-md-block">
+                    <div style="font-size: 12px; font-weight: bold; color: var(--primary-brown);">{{ user.username|upper }}</div>
+                    <div style="font-size: 10px; color: #94a3b8;">Sessão Ativa</div>
+                </div>
+                <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius: 8px; padding: 8px 15px; font-weight: bold;">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
+                </form>
+            </div>
+            {% endif %}
         </div>
 
         {% if messages %}

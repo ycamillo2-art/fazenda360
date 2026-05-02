@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.http import JsonResponse
 from .models import Propriedade, Categoria, Subcategoria, Tipo, Lancamento
@@ -16,9 +17,11 @@ from reportlab.graphics.charts.piecharts import Pie
 from reportlab.graphics.charts.legends import Legend
 from django.http import HttpResponse
 
+@login_required
 def index(request):
     return redirect('cadastro')
 
+@login_required
 def cadastro(request):
     if request.method == 'POST':
         prop_id = request.POST.get('propriedade')
@@ -73,6 +76,7 @@ def cadastro(request):
     }
     return render(request, 'financeiro/cadastro.html', context)
 
+@login_required
 def relatorios(request):
     lancamentos = Lancamento.objects.all().order_by('-data')
     prop_id = request.GET.get('propriedade')
@@ -111,6 +115,7 @@ def relatorios(request):
     }
     return render(request, 'financeiro/relatorios.html', context)
 
+@login_required
 def remover_propriedade(request):
     if request.method == 'POST':
         prop_id = request.POST.get('id')
@@ -122,6 +127,7 @@ def remover_propriedade(request):
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Método inválido'})
 
+@login_required
 def remover_lancamento(request):
     if request.method == 'POST':
         lanc_id = request.POST.get('id')
@@ -133,6 +139,7 @@ def remover_lancamento(request):
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Método inválido'})
 
+@login_required
 def exportar_pdf(request):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=18)
