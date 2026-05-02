@@ -130,6 +130,11 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'login'
 
+# Segurança de Sessão
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Encerra a sessão ao fechar o navegador
+SESSION_COOKIE_AGE = 3600              # Tempo máximo de inatividade: 1 hora (em segundos)
+SESSION_SAVE_EVERY_REQUEST = True       # Atualiza o tempo de expiração a cada clique
+
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
