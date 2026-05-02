@@ -1,0 +1,7 @@
+gunicorn
+whitenoise
+django
+reportlab
+django-humanize
+pillow
+requests

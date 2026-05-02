@@ -1,0 +1,1 @@
+web: gunicorn fazenda360.wsgi

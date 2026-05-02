@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="jumbotron text-center">
+    <h1 class="display-4">Bem-vindo ao FAZENDA360</h1>
+    <p class="lead">Sistema de gestão financeira rural para máxima confiabilidade e produtividade.</p>
+    <hr class="my-4">
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <a href="{% url 'cadastro' %}" class="btn btn-primary btn-lg btn-block">Novo Lançamento</a>
+        </div>
+        <div class="col-md-6">
+            <a href="{% url 'relatorios' %}" class="btn btn-success btn-lg btn-block">Ver Relatórios</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

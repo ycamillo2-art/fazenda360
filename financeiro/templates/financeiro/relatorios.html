@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load l10n %}
+{% block content %}
+<style>
+    .summary-card {
+        padding: 25px;
+        border-radius: 16px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        margin-bottom: 25px;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+    .summary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    .summary-card::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        transform: rotate(45deg);
+    }
+    .summary-card small { 
+        font-size: 12px; 
+        opacity: 0.8; 
+        text-transform: uppercase; 
+        letter-spacing: 1.5px;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 10px;
+    }
+    .summary-card h3 { font-size: 26px; margin-bottom: 0; font-weight: 900; }
+    .bg-entradas { background: linear-gradient(135deg, #2e7d32, #43a047) !important; }
+    .bg-saidas { background: linear-gradient(135deg, #c62828, #e53935) !important; }
+    .bg-saldo { background: linear-gradient(135deg, #1565c0, #1e88e5) !important; }
+    
+    .filter-section {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 16px;
+        border: 1.5px solid var(--border-color);
+        margin-bottom: 35px;
+    }
+    .report-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 12px;
+    }
+    .report-table tr.data-row {
+        background-color: #fff;
+        transition: all 0.2s ease;
+        cursor: default;
+    }
+    .report-table tr.data-row:hover {
+        transform: scale(1.01);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+        z-index: 10;
+    }
+    .report-table td { 
+        padding: 18px 20px; 
+        border: none; 
+        vertical-align: middle; 
+        border-top: 1.5px solid var(--border-color);
+        border-bottom: 1.5px solid var(--border-color);
+    }
+    .report-table td:first-child { border-left: 1.5px solid var(--border-color); border-radius: 12px 0 0 12px; }
+    .report-table td:last-child { border-right: 1.5px solid var(--border-color); border-radius: 0 12px 12px 0; }
+    
+    .status-badge {
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .badge-entrada { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .badge-saida { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+    
+    .btn-filter-action {
+        height: 50px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-weight: 700;
+        border-radius: 12px;
+        padding: 0 25px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 13px;
+        border: none;
+        transition: all 0.25s ease;
+    }
+    .btn-apply { background-color: var(--primary-brown); color: white; }
+    .btn-apply:hover { background-color: #4e342e; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(93, 64, 55, 0.2); color: white; }
+    
+    .btn-pdf { background-color: var(--secondary-green); color: white; }
+    .btn-pdf:hover { background-color: #1b5e20; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(46, 125, 50, 0.2); color: white; }
+    
+    .btn-clear { background-color: #f1f5f9; color: #475569; }
+    .btn-clear:hover { background-color: #e2e8f0; transform: translateY(-2px); color: #1e293b; text-decoration: none; }
+    
+    .btn-delete-lancamento {
+        color: #94a3b8;
+        background: none;
+        border: none;
+        padding: 8px;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+    }
+    .btn-delete-lancamento:hover {
+        color: #ef4444;
+        background-color: #fee2e2;
+        transform: scale(1.1);
+    }
+    /* AJUSTES MOBILE PARA RELATÓRIOS */
+    @media (max-width: 768px) {
+        .summary-card {
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .summary-card h3 {
+            font-size: 22px;
+        }
+        .filter-section {
+            padding: 20px;
+        }
+        .btn-filter-action {
+            width: 100%;
+            margin-bottom: 10px;
+            margin-right: 0 !important;
+        }
+        .btn-home {
+            margin-left: 0 !important;
+        }
+        
+        /* Transformar tabela em Cards no Celular */
+        .report-table thead { display: none; }
+        .report-table, .report-table tbody, .report-table tr, .report-table td { 
+            display: block; 
+            width: 100%; 
+        }
+        .report-table tr.data-row {
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 15px;
+            position: relative;
+        }
+        .report-table td {
+            border: none !important;
+            padding: 8px 0 !important;
+            text-align: left !important;
+        }
+        .report-table td::before {
+            content: attr(data-label);
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #94a3b8;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .btn-delete-lancamento {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #fee2e2;
+            color: #ef4444;
+        }
+    }
+</style>
+
+<!-- CARDS DE RESUMO -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="summary-card bg-entradas">
+            <small class="text-uppercase font-weight-bold">Total Recebido</small>
+            <h3 class="mb-0">R$ {{ total_recebido|floatformat:2|intcomma }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="summary-card bg-saidas">
+            <small class="text-uppercase font-weight-bold">Total Pago</small>
+            <h3 class="mb-0">R$ {{ total_pago|floatformat:2|intcomma }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="summary-card bg-saldo">
+            <small class="text-uppercase font-weight-bold">Saldo do Período</small>
+            <h3 class="mb-0">R$ {{ saldo|floatformat:2|intcomma }}</h3>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- FILTROS -->
+    <div class="col-md-8">
+<div class="filter-section">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0 font-weight-bold text-muted">FILTRAR RESULTADOS</h6>
+        {% if filtros.categoria or filtros.propriedade or filtros.mes %}
+            <a href="{% url 'relatorios' %}" class="btn btn-sm btn-outline-danger" style="border-radius: 8px; font-weight: 700;">
+                <i class="fas fa-times"></i> Limpar Tudo
+            </a>
+        {% endif %}
+    </div>
+    <form method="GET" class="row">
+                <div class="col-md-4 form-group">
+                    <label class="small font-weight-bold">Propriedade</label>
+                    <select name="propriedade" class="custom-input">
+                        <option value="">Todas</option>
+                        {% for p in propriedades %}
+                        <option value="{{ p.id }}" {% if filtros.propriedade == p.id|stringformat:"i" %}selected{% endif %}>{{ p.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 form-group">
+                    <label class="small font-weight-bold">Mês</label>
+                    <input type="month" name="month" class="custom-input" value="{{ filtros.mes }}">
+                </div>
+                <div class="col-md-4 form-group">
+                    <label class="small font-weight-bold">Categoria</label>
+                    <select name="categoria" class="custom-input">
+                        <option value="">Todas</option>
+                        {% for c in categorias %}
+                        <option value="{{ c.id }}" {% if filtros.categoria == c.id|stringformat:"i" %}selected{% endif %}>{{ c.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-12 mt-3 d-flex justify-content-start align-items-center">
+                    <button type="submit" class="btn-filter-action btn-apply mr-2">
+                        <i class="fas fa-filter"></i> Aplicar Filtros
+                    </button>
+                    <button type="button" onclick="exportarPDF()" class="btn-filter-action btn-pdf mr-2">
+                        <i class="fas fa-file-pdf"></i> Gerar PDF
+                    </button>
+                    <a href="{% url 'relatorios' %}" class="btn-filter-action btn-clear mr-2">Limpar</a>
+                    <a href="{% url 'index' %}" class="btn-filter-action btn-home ml-auto">
+                        <i class="fas fa-home"></i> Início
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    
+    <!-- GRÁFICO SIMPLES -->
+    <div class="col-md-4">
+        <div class="filter-section text-center">
+            <h6 class="mb-3 font-weight-bold text-muted">DISTRIBUIÇÃO DE GASTOS</h6>
+            <div style="height: 180px; position: relative; margin-bottom: 20px;">
+                <canvas id="categoryChart"></canvas>
+            </div>
+            <div id="chartLegend" class="text-left mt-2" style="max-height: 150px; overflow-y: auto; font-size: 11px;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive mt-2">
+    <table class="report-table">
+        <thead>
+            <tr class="text-muted small font-weight-bold notranslate">
+                <th>DATA</th>
+                <th>PROPRIEDADE</th>
+                <th>CATEGORIA / SUB</th>
+                <th>TIPO</th>
+                <th>VALOR</th>
+                <th>DESCRIÇÃO</th>
+                <th class="text-right">AÇÕES</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in lancamentos %}
+            <tr class="data-row" id="lancamento-{{ l.id|unlocalize }}">
+                <td data-label="Data">{{ l.data|date:"d/m/Y" }}</td>
+                <td data-label="Propriedade" style="font-weight: 700;">{{ l.propriedade.nome }}</td>
+                <td data-label="Categoria">
+                    {{ l.categoria.nome }}<br>
+                    <small class="text-muted">{{ l.subcategoria.nome }}</small>
+                </td>
+                <td data-label="Tipo">
+                    {% with tipo=l.tipo.nome|upper %}
+                        {% if tipo == 'RECEBIMENTO' or tipo == 'ENTRADA' %}
+                            <span class="status-badge badge-entrada">Entrada</span>
+                        {% else %}
+                            <span class="status-badge badge-saida">Saída</span>
+                        {% endif %}
+                    {% endwith %}
+                </td>
+                <td data-label="Valor" style="font-weight: 900; color: var(--text-main);">R$ {{ l.valor|intcomma }}</td>
+                <td data-label="Descrição">{{ l.descricao|default:"-" }}</td>
+                <td class="text-right">
+                    <button class="btn-delete-lancamento" onclick="removerLancamento({{ l.id|unlocalize }})" title="Excluir Lançamento">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function exportarPDF() {
+        const urlParams = new URLSearchParams(window.location.search);
+        window.location.href = "{% url 'exportar_pdf' %}?" + urlParams.toString();
+    }
+
+    function removerLancamento(id) {
+        if (confirm('Tem certeza que deseja EXCLUIR este lançamento? Esta ação não pode ser desfeita.')) {
+            $.ajax({
+                url: '{% url "remover_lancamento" %}',
+                type: 'POST',
+                data: {
+                    'id': id,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#lancamento-' + id).fadeOut(300, function() { 
+                            $(this).remove(); 
+                            // Opcional: Recarregar para atualizar os totais no topo
+                            location.reload();
+                        });
+                    } else {
+                        alert('Erro ao excluir lançamento: ' + response.error);
+                    }
+                }
+            });
+        }
+    }
+</script>
+{% endblock %}

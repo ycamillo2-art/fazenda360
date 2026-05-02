@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% load l10n %}
+{% block content %}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 style="font-weight: 800; color: var(--primary-brown); text-transform: uppercase; letter-spacing: 1px;">
+            <i class="fas fa-plus-circle mr-2"></i> Novo Lançamento
+        </h4>
+        <p class="text-muted small">Preencha os campos abaixo para registrar uma movimentação financeira.</p>
+    </div>
+</div>
+
+<form method="POST" id="form-cadastro">
+    {% csrf_token %}
+    
+    <!-- SEÇÃO 1: CLASSIFICAÇÃO -->
+    <div class="form-section-card">
+        <div class="section-title">
+            <i class="fas fa-tags"></i> Classificação e Origem
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="input-group-custom">
+                    <label class="form-label">Propriedade</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-home"></i>
+                        <select name="propriedade" id="select-propriedade" class="custom-input dynamic-select" required>
+                            <option value="">Selecione a Propriedade</option>
+                            {% for p in propriedades %}
+                            <option value="{{ p.id|unlocalize }}">{{ p.nome }}</option>
+                            {% endfor %}
+                            <option value="new" style="color: var(--secondary-green); font-weight: bold;">+ Cadastrar Nova Propriedade</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn-quick-add" data-toggle="modal" data-target="#modalGerenciarPropriedades">
+                        <i class="fas fa-cog"></i> Gerenciar
+                    </button>
+                    <input type="text" name="nova_propriedade" class="custom-input mt-2 d-none" placeholder="Digite o nome da nova propriedade">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="input-group-custom">
+                    <label class="form-label">Data do Lançamento</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                        <input type="date" name="data" class="custom-input" value="{{ hoje }}" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="input-group-custom">
+                    <label class="form-label">Categoria</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-folder-open"></i>
+                        <select name="categoria" class="custom-input dynamic-select" required>
+                            <option value="">Selecione a Categoria</option>
+                            {% for c in categorias %}
+                            <option value="{{ c.id|unlocalize }}">{{ c.nome }}</option>
+                            {% endfor %}
+                            <option value="new" style="color: var(--secondary-green); font-weight: bold;">+ Cadastrar Nova Categoria</option>
+                        </select>
+                    </div>
+                    <input type="text" name="nova_categoria" class="custom-input mt-2 d-none" placeholder="Digite a nova categoria">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group-custom">
+                    <label class="form-label">Subcategoria</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-list-ul"></i>
+                        <select name="subcategoria" class="custom-input dynamic-select" required>
+                            <option value="">Selecione a Subcategoria</option>
+                            {% for s in subcategorias %}
+                            <option value="{{ s.id|unlocalize }}">{{ s.nome }}</option>
+                            {% endfor %}
+                            <option value="new" style="color: var(--secondary-green); font-weight: bold;">+ Cadastrar Nova Subcategoria</option>
+                        </select>
+                    </div>
+                    <input type="text" name="nova_subcategoria" class="custom-input mt-2 d-none" placeholder="Digite a nova subcategoria">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 2: DETALHES FINANCEIROS -->
+    <div class="form-section-card">
+        <div class="section-title">
+            <i class="fas fa-dollar-sign"></i> Detalhes Financeiros
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="input-group-custom">
+                    <label class="form-label">Tipo de Lançamento</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                        <select name="tipo" id="select-tipo" class="custom-input dynamic-select" required>
+                            <option value="">Selecione o Tipo</option>
+                            {% for t in tipos %}
+                            <option value="{{ t.id|unlocalize }}">{{ t.nome }}</option>
+                            {% endfor %}
+                            <option value="new" style="color: var(--secondary-green); font-weight: bold;">+ Cadastrar Novo Tipo</option>
+                        </select>
+                    </div>
+                    <input type="text" name="novo_tipo" class="custom-input mt-2 d-none" placeholder="Digite o novo tipo">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group-custom valor-input-container">
+                    <label class="form-label">Valor (R$)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-coins"></i>
+                        <input type="text" name="valor" id="id_valor" class="custom-input" placeholder="0,00" style="font-weight: 900; font-size: 18px;" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="input-group-custom mb-0">
+                    <label class="form-label">Descrição / Observações</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-comment-alt" style="top: 25px;"></i>
+                        <textarea name="descricao" class="custom-input" rows="3" placeholder="Insira detalhes adicionais aqui..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-custom-container">
+        <a href="{% url 'relatorios' %}" class="btn-reports">
+            <i class="fas fa-chart-line"></i> Analisar Relatórios
+        </a>
+        <button type="submit" class="btn-save">
+            <i class="fas fa-check-double"></i> Confirmar Lançamento
+        </button>
+    </div>
+</form>
+
+<!-- MODAL GERENCIAR PROPRIEDADES -->
+<div class="modal fade" id="modalGerenciarPropriedades" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="font-weight: 800; color: var(--primary-brown);">
+                    <i class="fas fa-tasks mr-2"></i> Gerenciar Propriedades
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-4">Atenção: A remoção de uma propriedade também removerá todos os lançamentos vinculados a ela.</p>
+                <ul class="manage-list">
+                    {% for p in propriedades %}
+                    <li class="manage-item" id="prop-item-{{ p.id|unlocalize }}">
+                        <span style="font-weight: 600; color: var(--text-main);">{{ p.nome }}</span>
+                        <button type="button" class="btn-delete-item" onclick="removerPropriedade({{ p.id|unlocalize }}, '{{ p.nome }}')">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('.dynamic-select').change(function() {
+            var input = $(this).closest('.input-group-custom').find('input[type="text"]');
+            if ($(this).val() === 'new') {
+                input.removeClass('d-none').attr('required', true).focus();
+            } else {
+                input.addClass('d-none').removeAttr('required');
+            }
+        });
+
+        // Cor dinâmica para o valor
+        $('#select-tipo').change(function() {
+            var tipoNome = $(this).find('option:selected').text().toUpperCase();
+            var container = $('.valor-input-container');
+            container.attr('data-tipo', tipoNome);
+        });
+
+        // Máscara de Moeda Dinâmica
+        $('#id_valor').on('input', function() {
+            let value = $(this).val().replace(/\D/g, '');
+            if (value === "") value = "0";
+            value = (value / 100).toFixed(2) + '';
+            value = value.replace(".", ",");
+            value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+            $(this).val(value);
+        });
+    });
+
+    function removerPropriedade(id, nome) {
+        if (confirm('Tem certeza que deseja REMOVER a propriedade "' + nome + '"? Todos os lançamentos vinculados serão perdidos permanentemente.')) {
+            $.ajax({
+                url: '{% url "remover_propriedade" %}',
+                type: 'POST',
+                data: {
+                    'id': id,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#prop-item-' + id).fadeOut(300, function() { $(this).remove(); });
+                        // Remover do select também
+                        $('#select-propriedade option[value="' + id + '"]').remove();
+                    } else {
+                        alert('Erro ao remover: ' + response.error);
+                    }
+                }
+            });
+        }
+    }
+</script>
+{% endblock %}
