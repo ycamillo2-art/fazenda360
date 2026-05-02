@@ -1,16 +1,54 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="jumbotron text-center">
-    <h1 class="display-4">Bem-vindo ao FAZENDA360</h1>
-    <p class="lead">Sistema de gestão financeira rural para máxima confiabilidade e produtividade.</p>
-    <hr class="my-4">
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <a href="{% url 'cadastro' %}" class="btn btn-primary btn-lg btn-block">Novo Lançamento</a>
+<div class="welcome-container text-center">
+    <div class="welcome-card shadow-lg p-5">
+        <div class="welcome-icon mb-4">
+            <i class="fas fa-seedling text-success" style="font-size: 3rem;"></i>
         </div>
-        <div class="col-md-6">
-            <a href="{% url 'relatorios' %}" class="btn btn-success btn-lg btn-block">Ver Relatórios</a>
+        <h1 class="display-4 font-weight-bold" style="color: var(--primary-brown);">
+            Olá, {{ user.username|title }}!
+        </h1>
+        <p class="lead text-muted mb-4">Seja bem-vindo ao <strong>FAZENDA360</strong>. O que vamos gerenciar hoje?</p>
+        
+        <div class="welcome-divider my-4"></div>
+        
+        <div class="row mt-5 justify-content-center">
+            <div class="col-md-5 mb-3">
+                <a href="{% url 'cadastro' %}" class="btn btn-save w-100 py-3 d-flex align-items-center justify-content-center gap-3">
+                    <i class="fas fa-plus-circle"></i>
+                    Novo Lançamento
+                </a>
+            </div>
+            <div class="col-md-5 mb-3">
+                <a href="{% url 'relatorios' %}" class="btn btn-reports w-100 py-3 d-flex align-items-center justify-content-center gap-3">
+                    <i class="fas fa-chart-line"></i>
+                    Ver Relatórios
+                </a>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    .welcome-container {
+        padding: 40px 20px;
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .welcome-card {
+        background: white;
+        border-radius: 24px;
+        max-width: 800px;
+        width: 100%;
+        border: 1px solid var(--border-color);
+    }
+    .welcome-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, var(--border-color) 50%, transparent 100%);
+        width: 100%;
+    }
+    .gap-3 { gap: 1rem; }
+</style>
 {% endblock %}
