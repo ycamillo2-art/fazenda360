@@ -1,43 +1,316 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-    <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%; border-radius: 15px; border: none;">
-        <div class="text-center mb-4">
-            <h2 style="color: #5d4037; font-weight: 800;">FAZENDA<span style="color: #2e7d32;">360</span></h2>
-            <p class="text-muted">Acesso ao Sistema Financeiro</p>
+<div class="login-page d-flex justify-content-center align-items-center">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="logo-container">
+                <img src="https://sc01.alicdn.com/kf/Af476ff7174de4cf79ad778fe46cc2de7Q.jpg" alt="RD CONILON LOGO">
+            </div>
+            <h2 class="brand-name">FAZENDA<span>360</span></h2>
+            <p class="brand-subtitle">Gestão Financeira Inteligente</p>
         </div>
         
-        <form method="post">
+        <form method="post" class="login-form">
             {% csrf_token %}
-            <div class="mb-3">
-                <label for="username" class="form-label">Usuário</label>
-                <input type="text" name="username" class="form-control" id="username" required 
-                       style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;">
+            
+            <div class="form-group-custom">
+                <label for="username" class="custom-label">Usuário</label>
+                <div class="input-icon-wrapper">
+                    <i class="fas fa-user field-icon"></i>
+                    <input type="text" name="username" class="form-control-modern" id="username" placeholder="Digite seu usuário" required>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Senha</label>
-                <input type="password" name="password" class="form-control" id="password" required
-                       style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;">
+
+            <div class="form-group-custom">
+                <label for="password" class="custom-label">Senha</label>
+                <div class="input-icon-wrapper">
+                    <i class="fas fa-lock field-icon"></i>
+                    <input type="password" name="password" class="form-control-modern" id="password" placeholder="Digite sua senha" required>
+                    <button type="button" id="togglePassword" class="toggle-password">
+                        <i class="fas fa-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
             </div>
             
             {% if form.errors %}
-                <div class="alert alert-danger" style="border-radius: 10px; font-size: 0.9rem;">
-                    Usuário ou senha incorretos.
+                <div class="login-error">
+                    <i class="fas fa-exclamation-circle"></i> Usuário ou senha incorretos.
                 </div>
             {% endif %}
             
-            <button type="submit" class="btn w-100 py-3 mt-2" 
-                    style="background: #2e7d32; color: white; border-radius: 10px; font-weight: bold; border: none; transition: 0.3s;">
-                Entrar no Sistema
+            <button type="submit" class="btn-login-modern">
+                <span>ACESSAR SISTEMA</span>
+                <i class="fas fa-arrow-right"></i>
             </button>
         </form>
+        
+        <div class="login-footer">
+            <p>&copy; 2026 RD Conilon - Todos os direitos reservados</p>
+        </div>
     </div>
 </div>
 
 <style>
-    body { background-color: #f8f9fa !important; }
-    .navbar { display: none !important; } /* Esconde o menu na tela de login */
-    button:hover { background: #1b5e20 !important; transform: translateY(-2px); }
+    :root {
+        --primary: #5d4037;
+        --secondary: #2e7d32;
+        --accent: #1b5e20;
+        --text-muted: #94a3b8;
+        --border: #e2e8f0;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    .main-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .header-logo {
+        display: none !important;
+    }
+
+    .login-page {
+        min-height: 100vh;
+        width: 100%;
+        padding: 20px;
+        background: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+        position: relative;
+    }
+
+    .login-page::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+    }
+
+    .login-card {
+        background: white;
+        width: 100%;
+        max-width: 450px;
+        padding: 50px 40px;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        position: relative;
+        z-index: 1;
+        border: 1px solid rgba(255,255,255,0.8);
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .logo-container {
+        margin-bottom: 20px;
+    }
+
+    .logo-container img {
+        height: 70px;
+        transition: transform 0.5s ease;
+    }
+
+    .logo-container img:hover {
+        transform: scale(1.1) rotate(-3deg);
+    }
+
+    .brand-name {
+        font-size: 28px;
+        font-weight: 900;
+        color: var(--primary);
+        letter-spacing: 4px;
+        margin: 10px 0 5px;
+        text-transform: uppercase;
+    }
+
+    .brand-name span {
+        color: var(--secondary);
+    }
+
+    .brand-subtitle {
+        color: var(--text-muted);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 1px;
+    }
+
+    .form-group-custom {
+        margin-bottom: 25px;
+    }
+
+    .custom-label {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--primary);
+        letter-spacing: 1.5px;
+        margin-bottom: 8px;
+        display: block;
+        opacity: 0.8;
+    }
+
+    .input-icon-wrapper {
+        position: relative;
+    }
+
+    .field-icon {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--secondary);
+        transition: all 0.3s ease;
+        z-index: 2;
+        font-size: 16px;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 5px;
+        z-index: 2;
+        transition: color 0.3s ease;
+    }
+
+    .toggle-password:hover {
+        color: var(--secondary);
+    }
+
+    .form-control-modern {
+        width: 100%;
+        padding: 15px 45px 15px 50px;
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+        color: #334155;
+    }
+
+    .form-control-modern:focus {
+        outline: none;
+        border-color: var(--secondary);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1);
+    }
+
+    .form-control-modern:focus + i {
+        color: var(--secondary);
+    }
+
+    .login-error {
+        background: #fef2f2;
+        color: #ef4444;
+        padding: 12px 15px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid #fee2e2;
+    }
+
+    .btn-login-modern {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 2px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 25px rgba(46, 125, 50, 0.2);
+    }
+
+    .btn-login-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(46, 125, 50, 0.3);
+        background: linear-gradient(135deg, #388e3c 0%, #1b5e20 100%);
+    }
+
+    .btn-login-modern:active {
+        transform: translateY(-1px);
+    }
+
+    .login-footer {
+        text-align: center;
+        margin-top: 40px;
+        border-top: 1px solid var(--border);
+        padding-top: 25px;
+    }
+
+    .login-footer p {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0;
+    }
+
+    @media (max-width: 576px) {
+        .login-card {
+            padding: 40px 25px;
+            border-radius: 0;
+            max-width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .login-page {
+            padding: 0;
+        }
+        .login-page::before {
+            display: none;
+        }
+    }
 </style>
+<script>
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#password');
+    const eyeIcon = document.querySelector('#eyeIcon');
+
+    togglePassword.addEventListener('click', function (e) {
+        // toggle the type attribute
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        
+        // toggle the eye / eye slash icon
+        if (type === 'password') {
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye');
+        } else {
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
+        }
+    });
+</script>
 {% endblock %}
