@@ -14,6 +14,7 @@ from reportlab.lib.units import inch
 from reportlab.lib import colors
 from reportlab.graphics.shapes import Drawing
 from reportlab.graphics.charts.piecharts import Pie
+from reportlab.graphics.charts.barcharts import VerticalBarChart
 from reportlab.graphics.charts.legends import Legend
 from django.http import HttpResponse
 
@@ -267,28 +268,35 @@ def exportar_pdf(request):
         return t_card
 
     if dados_grafico_qs.exists():
-        d = Drawing(220, 130)
-        pc = Pie()
-        pc.x, pc.y, pc.width, pc.height = 10, 10, 100, 100
-        pc.data = [float(item['total']) for item in dados_grafico_qs]
-        pc.labels = [item['categoria__nome'] for item in dados_grafico_qs]
-        pc.slices.strokeWidth = 0.5
+        d = Drawing(320, 150)
+        bc = VerticalBarChart()
+        bc.x, bc.y = 45, 45
+        bc.height, bc.width = 90, 260
+        bc.data = [[float(item['total']) for item in dados_grafico_qs]]
+        bc.strokeColor = colors.white
+        bc.valueAxis.valueMin = 0
+        bc.valueAxis.labels.fontSize = 7
+        bc.categoryAxis.labels.fontSize = 7
+        bc.categoryAxis.labels.angle = 30
+        bc.categoryAxis.labels.boxAnchor = 'ne'
+        bc.categoryAxis.categoryNames = [item['categoria__nome'] for item in dados_grafico_qs]
+        
         rd_colors = [colors.HexColor("#5d4037"), colors.HexColor("#2e7d32"), colors.HexColor("#1565c0"), 
                      colors.HexColor("#fbc02d"), colors.HexColor("#e64a19"), colors.HexColor("#7b1fa2"),
                      colors.HexColor("#0097a7"), colors.HexColor("#689f38"), colors.HexColor("#ffa000"),
                      colors.HexColor("#455a64")]
-        for i, color in enumerate(rd_colors):
-            if i < len(pc.data): pc.slices[i].fillColor = color
         
-        leg = Legend()
-        leg.x, leg.y, leg.alignment, leg.fontSize = 135, 110, 'right', 7
-        leg.colorNamePairs = [(pc.slices[i].fillColor, pc.labels[i]) for i in range(len(pc.data))]
-        d.add(pc); d.add(leg)
+        for i, color in enumerate(rd_colors):
+            if i < len(bc.data[0]):
+                bc.bars[(0, i)].fillColor = color
+        
+        d.add(bc)
 
         resumo_col_data = [[criar_card_formatado(row, 2.5*inch)] for row in resumo_inner_data]
         layout_table = Table([[d, Table(resumo_col_data, colWidths=[2.7*inch], rowHeights=42)]], colWidths=[4.8*inch, 4.2*inch])
         layout_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'MIDDLE'), ('ALIGN', (0,0), (0,0), 'CENTER')]))
         elements.append(layout_table)
+
     else:
         resumo_row_data = [criar_card_formatado(row, 2.8*inch) for row in resumo_inner_data]
         layout_table = Table([resumo_row_data], colWidths=[3*inch, 3*inch, 3*inch])
