@@ -47,13 +47,21 @@ def importar_excel(caminho_arquivo):
         count_sucesso = 0
         
         # Limpar o banco antes de re-importar para evitar duplicidade e lixo
-        Lancamento.objects.all().delete()
-        Subcategoria.objects.all().delete()
-        Categoria.objects.all().delete()
-        Propriedade.objects.all().delete()
-        Tipo.objects.all().delete()
+        print("Limpando banco de dados...")
+        try:
+            Lancamento.objects.all().delete()
+            Subcategoria.objects.all().delete()
+            Categoria.objects.all().delete()
+            Propriedade.objects.all().delete()
+            Tipo.objects.all().delete()
+            print("Banco de dados limpo.")
+        except Exception as e:
+            print(f"Aviso na limpeza: {e}")
 
         for index, row in df.iterrows():
+            if index % 50 == 0:
+                print(f"Processando linha {index}...")
+
             try:
                 # Pegar colunas por posição para evitar erros de encoding nos nomes das colunas
                 # 0: Data, 1: Propriedade, 2: Categoria, 3: Subcategoria, 4: Tipo, 5: Descrição, 6: Valor
