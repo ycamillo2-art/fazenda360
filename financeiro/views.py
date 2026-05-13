@@ -133,6 +133,31 @@ def remover_propriedade(request):
     return JsonResponse({'success': False, 'error': 'Método inválido'})
 
 @login_required
+def remover_categoria(request):
+    if request.method == 'POST':
+        cat_id = request.POST.get('id')
+        try:
+            cat = Categoria.objects.get(id=cat_id)
+            cat.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Método inválido'})
+
+@login_required
+def remover_subcategoria(request):
+    if request.method == 'POST':
+        sub_id = request.POST.get('id')
+        try:
+            sub = Subcategoria.objects.get(id=sub_id)
+            sub.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Método inválido'})
+
+
+@login_required
 def remover_lancamento(request):
     if request.method == 'POST':
         lanc_id = request.POST.get('id')

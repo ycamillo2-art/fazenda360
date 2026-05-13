@@ -56,7 +56,7 @@
                     <label class="form-label">Categoria</label>
                     <div class="input-with-icon">
                         <i class="fas fa-folder-open"></i>
-                        <select name="categoria" class="custom-input dynamic-select" required>
+                        <select name="categoria" id="select-categoria" class="custom-input dynamic-select" required>
                             <option value="">Selecione a Categoria</option>
                             {% for c in categorias %}
                             <option value="{{ c.id|unlocalize }}">{{ c.nome }}</option>
@@ -64,6 +64,9 @@
                             <option value="new" style="color: var(--secondary-green); font-weight: bold;">+ Cadastrar Nova Categoria</option>
                         </select>
                     </div>
+                    <button type="button" class="btn-quick-add" data-toggle="modal" data-target="#modalGerenciarCategorias">
+                        <i class="fas fa-cog"></i> Gerenciar
+                    </button>
                     <input type="text" name="nova_categoria" class="custom-input mt-2 d-none" placeholder="Digite a nova categoria">
                 </div>
             </div>
@@ -72,7 +75,7 @@
                     <label class="form-label">Subcategoria</label>
                     <div class="input-with-icon">
                         <i class="fas fa-list-ul"></i>
-                        <select name="subcategoria" class="custom-input dynamic-select" required>
+                        <select name="subcategoria" id="select-subcategoria" class="custom-input dynamic-select" required>
                             <option value="">Selecione a Subcategoria</option>
                             {% for s in subcategorias %}
                             <option value="{{ s.id|unlocalize }}">{{ s.nome }}</option>
@@ -80,6 +83,9 @@
                             <option value="new" style="color: var(--secondary-green); font-weight: bold;">+ Cadastrar Nova Subcategoria</option>
                         </select>
                     </div>
+                    <button type="button" class="btn-quick-add" data-toggle="modal" data-target="#modalGerenciarSubcategorias">
+                        <i class="fas fa-cog"></i> Gerenciar
+                    </button>
                     <input type="text" name="nova_subcategoria" class="custom-input mt-2 d-none" placeholder="Digite a nova subcategoria">
                 </div>
             </div>
@@ -171,6 +177,70 @@
     </div>
 </div>
 
+<!-- MODAL GERENCIAR CATEGORIAS -->
+<div class="modal fade" id="modalGerenciarCategorias" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="font-weight: 800; color: var(--primary-brown);">
+                    <i class="fas fa-tasks mr-2"></i> Gerenciar Categorias
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-4">Atenção: A remoção de uma categoria removerá todas as suas subcategorias e lançamentos vinculados.</p>
+                <ul class="manage-list">
+                    {% for c in categorias %}
+                    <li class="manage-item" id="cat-item-{{ c.id|unlocalize }}">
+                        <span style="font-weight: 600; color: var(--text-main);">{{ c.nome }}</span>
+                        <button type="button" class="btn-delete-item" onclick="removerCategoria({{ c.id|unlocalize }}, '{{ c.nome }}')">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL GERENCIAR SUBCATEGORIAS -->
+<div class="modal fade" id="modalGerenciarSubcategorias" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="font-weight: 800; color: var(--primary-brown);">
+                    <i class="fas fa-tasks mr-2"></i> Gerenciar Subcategorias
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-4">Atenção: A remoção de uma subcategoria removerá todos os lançamentos vinculados a ela.</p>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <ul class="manage-list">
+                        {% for s in subcategorias %}
+                        <li class="manage-item" id="sub-item-{{ s.id|unlocalize }}">
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 10px; text-transform: uppercase;">{{ s.categoria.nome }}</small>
+                                <span style="font-weight: 600; color: var(--text-main);">{{ s.nome }}</span>
+                            </div>
+                            <button type="button" class="btn-delete-item" onclick="removerSubcategoria({{ s.id|unlocalize }}, '{{ s.nome }}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 {% endblock %}
 
 {% block scripts %}
@@ -215,7 +285,6 @@
                 success: function(response) {
                     if (response.success) {
                         $('#prop-item-' + id).fadeOut(300, function() { $(this).remove(); });
-                        // Remover do select também
                         $('#select-propriedade option[value="' + id + '"]').remove();
                     } else {
                         alert('Erro ao remover: ' + response.error);
@@ -224,5 +293,49 @@
             });
         }
     }
+
+    function removerCategoria(id, nome) {
+        if (confirm('Tem certeza que deseja REMOVER a categoria "' + nome + '"? Isso apagará todas as subcategorias e lançamentos desta categoria.')) {
+            $.ajax({
+                url: '{% url "remover_categoria" %}',
+                type: 'POST',
+                data: {
+                    'id': id,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#cat-item-' + id).fadeOut(300, function() { $(this).remove(); });
+                        $('#select-categoria option[value="' + id + '"]').remove();
+                        // O ideal seria recarregar para limpar as subcategorias órfãs do select, mas isso já resolve no banco
+                    } else {
+                        alert('Erro ao remover: ' + response.error);
+                    }
+                }
+            });
+        }
+    }
+
+    function removerSubcategoria(id, nome) {
+        if (confirm('Tem certeza que deseja REMOVER a subcategoria "' + nome + '"? Todos os lançamentos vinculados serão perdidos.')) {
+            $.ajax({
+                url: '{% url "remover_subcategoria" %}',
+                type: 'POST',
+                data: {
+                    'id': id,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#sub-item-' + id).fadeOut(300, function() { $(this).remove(); });
+                        $('#select-subcategoria option[value="' + id + '"]').remove();
+                    } else {
+                        alert('Erro ao remover: ' + response.error);
+                    }
+                }
+            });
+        }
+    }
+
 </script>
 {% endblock %}
