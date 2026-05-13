@@ -33,21 +33,24 @@ def cadastro(request):
         data_str = request.POST.get('data')
         descricao = request.POST.get('descricao')
 
-        # Handle new entries
-        if prop_id == 'new':
-            prop = Propriedade.objects.create(nome=request.POST.get('nova_propriedade'))
-            prop_id = prop.id
-        if cat_id == 'new':
-            cat = Categoria.objects.create(nome=request.POST.get('nova_categoria'))
-            cat_id = cat.id
-        if subcat_id == 'new':
-            subcat = Subcategoria.objects.create(nome=request.POST.get('nova_subcategoria'))
-            subcat_id = subcat.id
-        if tipo_id == 'new':
-            tipo = Tipo.objects.create(nome=request.POST.get('novo_tipo'))
-            tipo_id = tipo.id
-
+        # Handle new entries with get_or_create to avoid duplicates and integrity errors
         try:
+            if prop_id == 'new':
+                prop, _ = Propriedade.objects.get_or_create(nome=request.POST.get('nova_propriedade'))
+                prop_id = prop.id
+            if cat_id == 'new':
+                cat, _ = Categoria.objects.get_or_create(nome=request.POST.get('nova_categoria'))
+                cat_id = cat.id
+            if subcat_id == 'new':
+                subcat, _ = Subcategoria.objects.get_or_create(
+                    nome=request.POST.get('nova_subcategoria'),
+                    categoria_id=cat_id
+                )
+                subcat_id = subcat.id
+            if tipo_id == 'new':
+                tipo, _ = Tipo.objects.get_or_create(nome=request.POST.get('novo_tipo'))
+                tipo_id = tipo.id
+
             Lancamento.objects.create(
                 propriedade_id=prop_id,
                 categoria_id=cat_id,
@@ -60,6 +63,7 @@ def cadastro(request):
             messages.success(request, 'Lançamento realizado com sucesso!')
         except Exception as e:
             messages.error(request, f'Erro ao salvar: {str(e)}')
+
             
         return redirect('cadastro')
 
