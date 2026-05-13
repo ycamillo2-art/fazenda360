@@ -10,26 +10,26 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-qmh3fy3+f%9f(jj8!f6(yx^i2mo1j)e20g1p@8p&#6@&bjdc9c'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-default-key-change-it-in-prod')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Reload trigger
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 # Application definition
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -76,10 +76,8 @@ WSGI_APPLICATION = 'fazenda360.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-import dj_database_url
-import os
-
 DATABASES = {
+
     'default': dj_database_url.config(
         default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
         conn_max_age=600
