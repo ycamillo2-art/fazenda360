@@ -11,22 +11,23 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
-from pathlib import Path
 import dj_database_url
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-default-key-change-it-in-prod')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-qmh3fy3+f%9f(jj8!f6(yx^i2mo1j)e20g1p@8p&#6@&bjdc9c')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = ['*']
+if os.environ.get('ALLOWED_HOSTS'):
+    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
+
+CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com', 'https://fazenda360-deploy-v1.onrender.com']
 
 # Application definition
 
@@ -79,9 +80,10 @@ WSGI_APPLICATION = 'fazenda360.wsgi.application'
 DATABASES = {
 
     'default': dj_database_url.config(
-        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
+        default=os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')),
         conn_max_age=600
     )
+
 }
 
 
