@@ -444,18 +444,26 @@
     <script>
         function removeSplash() {
             const splash = document.getElementById('splash-screen');
-            if (splash) {
+            if (splash && splash.style.opacity !== '0') {
                 splash.style.opacity = '0';
                 setTimeout(() => { 
-                    splash.style.display = 'none'; 
+                    splash.style.display = 'none';
+                    document.body.style.overflow = 'auto';
                 }, 600);
             }
         }
 
+        // Bloquear scroll inicial
+        document.body.style.overflow = 'hidden';
+
         window.addEventListener('load', function() {
-            // Splash simples de 2 segundos
-            setTimeout(removeSplash, 2000);
+            // Sincronizado com as novas animações (logo + texto + loader)
+            // O loader começa em 1.2s e dura 2.5s = 3.7s total de cena
+            setTimeout(removeSplash, 4000);
         });
+
+        // Segurança: Remover splash após 7 segundos independente do carregamento
+        setTimeout(removeSplash, 7000);
     </script>
     {% block scripts %}{% endblock %}
 </body>
