@@ -334,93 +334,70 @@
                 padding-left: 45px;
             }
         }
-        /* Splash Screen Estilo Vídeo/Animação */
+        /* Splash Screen Simplificada */
         #splash-screen {
             position: fixed;
             width: 100%;
             height: 100%;
-            background: #1a472a; /* Verde mais escuro e elegante */
+            background: #1a472a; /* Verde RD */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             color: white;
-            transition: opacity 0.8s ease;
+            transition: opacity 0.5s ease;
             top: 0;
             left: 0;
-            overflow: hidden;
         }
         .splash-logo {
-            height: 120px;
+            height: 100px;
             margin-bottom: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            /* Animação de cair */
-            animation: dropLogo 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-        }
-        .splash-text {
-            font-weight: 900;
-            letter-spacing: 5px;
-            margin-top: 10px;
-            opacity: 0;
-            animation: fadeInText 0.8s ease forwards;
-            animation-delay: 1s;
-            text-align: center;
-            text-transform: uppercase;
+            border-radius: 12px;
         }
         .splash-welcome {
-            font-size: 14px;
-            color: #ffa500; /* Laranja RD */
+            font-size: 16px;
             font-weight: bold;
-            letter-spacing: 2px;
-            margin-top: 15px;
-            opacity: 0;
-            animation: fadeInText 0.8s ease forwards;
-            animation-delay: 1.5s;
+            margin-bottom: 20px;
+            text-align: center;
+            max-width: 80%;
         }
-        @keyframes dropLogo {
-            0% { transform: translateY(-500px); opacity: 0; }
-            60% { transform: translateY(30px); opacity: 1; }
-            100% { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes fadeInText {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .loader-line {
-            width: 200px;
-            height: 3px;
-            background: rgba(255,255,255,0.1);
-            margin-top: 30px;
-            position: relative;
+        .loader-bar {
+            width: 250px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
             overflow: hidden;
-            border-radius: 5px;
         }
-        .loader-line::after {
-            content: "";
-            position: absolute;
-            left: -100%;
-            width: 100%;
+        .loader-progress {
+            width: 0%;
             height: 100%;
-            background: #ffa500;
-            animation: loadingBar 2s infinite;
+            background: #ffa500; /* Laranja RD */
+            animation: loadProgress 2.5s ease-in-out forwards;
         }
-        @keyframes loadingBar {
-            0% { left: -100%; }
-            50% { left: 0; }
-            100% { left: 100%; }
+        @keyframes loadProgress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        .loading-text {
+            font-size: 11px;
+            margin-top: 10px;
+            color: rgba(255,255,255,0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
     </style>
 
 </head>
 <body>
-    <!-- Splash Screen Animada -->
+    <!-- Splash Screen Simplificada -->
     <div id="splash-screen">
         <img src="https://sc01.alicdn.com/kf/Af476ff7174de4cf79ad778fe46cc2de7Q.jpg" alt="RD CONILON LOGO" class="splash-logo">
-        <h2 class="splash-text">FAZENDA360</h2>
-        <p class="splash-welcome">SEJA BEM VINDO AO SISTEMA DE GESTÃO FINANCEIRA RD</p>
-        <div class="loader-line"></div>
+        <div class="splash-welcome">SEJA BEM VINDO AO SISTEMA DE GESTÃO FINANCEIRA RD</div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+        <div class="loading-text">Carregando arquivos...</div>
     </div>
 
     <div class="main-container">
