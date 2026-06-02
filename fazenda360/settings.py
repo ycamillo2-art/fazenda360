@@ -84,15 +84,6 @@ DATABASES = {
     )
 }
 
-# Fix for build process on Render when DB is unreachable
-if 'RENDER' in os.environ:
-    import sys
-    if 'collectstatic' in sys.argv:
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',
-        }
-
 
 
 

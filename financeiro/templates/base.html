@@ -465,15 +465,22 @@
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        window.addEventListener('load', function() {
+        // Função para remover splash screen
+        function removeSplash() {
             const splash = document.getElementById('splash-screen');
-            // Aumentei o tempo para 3.5 segundos para dar tempo de ver a animação completa
-            setTimeout(() => {
+            if (splash) {
                 splash.style.opacity = '0';
                 setTimeout(() => { 
                     splash.style.display = 'none'; 
                 }, 800);
-            }, 3500); 
+            }
+        }
+
+        window.addEventListener('load', function() {
+            // Se NÃO estivermos na página de cadastro, remove o splash normalmente
+            if (!window.location.pathname.includes('/cadastro/')) {
+                setTimeout(removeSplash, 1000); // 1 segundo para outras páginas
+            }
         });
     </script>
     {% block scripts %}{% endblock %}

@@ -245,7 +245,14 @@
 
 {% block scripts %}
 <script>
+    // Controle da Splash Screen específica para o Cadastro (pós-login)
+    $(window).on('load', function() {
+        // Segura o splash por 3.5 segundos para mostrar a animação estilo vídeo
+        setTimeout(removeSplash, 3500);
+    });
+
     $(document).ready(function() {
+
         $('.dynamic-select').change(function() {
             var input = $(this).closest('.input-group-custom').find('input[type="text"]');
             if ($(this).val() === 'new') {
