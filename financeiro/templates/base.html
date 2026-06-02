@@ -351,40 +351,66 @@
             left: 0;
         }
         .splash-logo {
-            height: 100px;
+            height: 120px;
             margin-bottom: 25px;
-            border-radius: 12px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            opacity: 0;
+            animation: logoFall 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         .splash-welcome {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 30px;
             text-align: center;
-            max-width: 80%;
+            max-width: 85%;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: textFadeIn 1s ease-out 0.6s forwards;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         .loader-bar {
-            width: 250px;
-            height: 4px;
-            background: rgba(255,255,255,0.2);
+            width: 280px;
+            height: 6px;
+            background: rgba(255,255,255,0.15);
             border-radius: 10px;
             overflow: hidden;
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out 1.2s forwards;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
         }
         .loader-progress {
             width: 0%;
             height: 100%;
-            background: #ffa500; /* Laranja RD */
-            animation: loadProgress 2.5s ease-in-out forwards;
+            background: linear-gradient(90deg, #ffa500, #ffcc33);
+            box-shadow: 0 0 15px rgba(255, 165, 0, 0.5);
+            animation: loadProgress 2.5s cubic-bezier(0.4, 0, 0.2, 1) 1.2s forwards;
+        }
+        @keyframes logoFall {
+            0% { transform: translateY(-100px) scale(0.8); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes textFadeIn {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         @keyframes loadProgress {
             0% { width: 0%; }
             100% { width: 100%; }
         }
         .loading-text {
-            font-size: 11px;
-            margin-top: 10px;
-            color: rgba(255,255,255,0.7);
+            font-size: 10px;
+            margin-top: 15px;
+            color: rgba(255,255,255,0.6);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out 1.5s forwards;
         }
     </style>
 
