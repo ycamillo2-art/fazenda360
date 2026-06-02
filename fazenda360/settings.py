@@ -84,6 +84,15 @@ DATABASES = {
     )
 }
 
+# Configuração para evitar erro no build do Render (collectstatic)
+if 'RENDER' in os.environ:
+    import sys
+    if 'collectstatic' in sys.argv:
+        DATABASES['default'] = {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+
 
 
 
