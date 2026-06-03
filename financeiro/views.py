@@ -55,6 +55,12 @@ def exportar_excel(request):
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Lançamentos')
+        
+        # Ajustar largura das colunas automaticamente
+        worksheet = writer.sheets['Lançamentos']
+        for idx, col in enumerate(df.columns):
+            max_len = max(df[col].astype(str).map(len).max(), len(col)) + 2
+            worksheet.column_dimensions[chr(65 + idx)].width = max_len
     
     buffer.seek(0)
     
