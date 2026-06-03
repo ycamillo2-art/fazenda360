@@ -7,10 +7,12 @@
     <title>FAZENDA360 - Gestão Financeira Rural</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary-brown: #5d4037;
             --secondary-green: #2e7d32;
+            --danger-red: #d32f2f;
             --bg-light: #f8f9fa;
             --card-shadow: 0 10px 40px rgba(0,0,0,0.06);
             --border-color: #e9ecef;
@@ -122,7 +124,7 @@
             cursor: pointer;
         }
         .btn-save {
-            background: linear-gradient(135deg, var(--secondary-green), #1b5e20);
+            background: linear-gradient(135deg, #2e7d32, #1b5e20); /* Verde para Salvar */
             color: white;
             box-shadow: 0 4px 15px rgba(46, 125, 50, 0.25);
         }
@@ -130,6 +132,25 @@
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(46, 125, 50, 0.35);
             color: white;
+            background: linear-gradient(135deg, #388e3c, #2e7d32);
+        }
+        /* Estilo para Botões de Ação Crítica (Excluir/Sair) */
+        .btn-danger-custom {
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .btn-danger-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.3);
+            color: white;
+            background: linear-gradient(135deg, #e53935, #d32f2f);
         }
         .btn-reports {
             background: linear-gradient(135deg, var(--primary-brown), #4e342e);
@@ -265,7 +286,12 @@
         .btn-delete-item:hover {
             background-color: #fee2e2;
             transform: scale(1.1);
+            color: #b91c1c;
         }
+        
+        /* Feedback visual para valores na lista */
+        .text-entrada { color: #15803d !important; font-weight: bold; }
+        .text-saida { color: #b91c1c !important; font-weight: bold; }
         
         .btn-back {
             background-color: #f1f5f9;
@@ -467,12 +493,20 @@
         </div>
 
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                    {{ message }}
-                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                </div>
-            {% endfor %}
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    {% for message in messages %}
+                        Swal.fire({
+                            icon: '{{ message.tags }}' === 'error' ? 'error' : ('{{ message.tags }}' === 'success' ? 'success' : 'info'),
+                            title: '{{ message.tags|upper }}',
+                            text: '{{ message }}',
+                            confirmButtonColor: '#5d4037',
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+                    {% endfor %}
+                });
+            </script>
         {% endif %}
         {% block content %}{% endblock %}
     </div>
