@@ -2,10 +2,11 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from .models import Propriedade, Categoria, Subcategoria, Tipo, Lancamento
 from datetime import datetime
 import io
+import pandas as pd
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
@@ -16,8 +17,6 @@ from reportlab.graphics.shapes import Drawing
 from reportlab.graphics.charts.piecharts import Pie
 from reportlab.graphics.charts.barcharts import VerticalBarChart
 from reportlab.graphics.charts.legends import Legend
-from django.http import HttpResponse
-import pandas as pd
 
 @login_required
 def exportar_excel(request):
@@ -74,7 +73,115 @@ def exportar_excel(request):
     return response
 
 @login_required
+def index(request):
+    return redirect('cadastro')
+
+@login_required
+def cadastro(request):
+    if request.method == 'POST':
+        prop_id = request.POST.get('propriedade')
+        cat_id = request.POST.get('categoria')
+        subcat_id = request.POST.get('subcategoria')
+        tipo_id = request.POST.get('tipo')
+        valor_str = request.POST.get('valor', '0').replace('.', '').replace(',', '.')
+        data_str = request.POST.get('data')
+        descricao = request.POST.get('descricao')
+
+        try:
+            if prop_id == 'new':
+                prop, _ = Propriedade.objects.get_or_create(nome=request.POST.get('nova_propriedade'))
+                prop_id = prop.id
+            if cat_id == 'new':
+                cat, _ = Categoria.objects.get_or_create(nome=request.POST.get('nova_categoria'))
+                cat_id = cat.id
+            if subcat_id == 'new':
+                subcat, _ = Subcategoria.objects.get_or_create(
+                    nome=request.POST.get('nova_subcategoria'),
+                    categoria_id=cat_id
+                )
+                subcat_id = subcat.id
+            if tipo_id == 'new':
+                tipo, _ = Tipo.objects.get_or_create(nome=request.POST.get('novo_tipo'))
+                tipo_id = tipo.id
+
+            Lancamento.objects.create(
+                propriedade_id=prop_id,
+                categoria_id=cat_id,
+                subcategoria_id=subcat_id,
+                tipo_id=tipo_id,
+                valor=valor_str,
+                data=data_str,
+                descricao=descricao
+            )
+            messages.success(request, 'Lançamento realizado com sucesso!')
+        except Exception as e:
+            messages.error(request, f'Erro ao salvar: {str(e)}')
+            
+        return redirect('cadastro')
+
+    propriedades = Propriedade.objects.all()
+    categorias = Categoria.objects.all()
+    subcategorias = Subcategoria.objects.all()
+    tipos = Tipo.objects.all()
+    
+    context = {
+        'propriedades': propriedades,
+        'categorias': categorias,
+        'subcategorias': subcategorias,
+        'tipos': tipos,
+        'hoje': datetime.now().strftime('%Y-%m-%d')
+    }
+    return render(request, 'financeiro/cadastro.html', context)
+
+@login_required
+def relatorios(request):
+    lancamentos = Lancamento.objects.all().order_by('-data')
+    prop_id = request.GET.get('propriedade')
+    mes = request.GET.get('month')
+    cat_id = request.GET.get('categoria')
+
+    if prop_id:
+        lancamentos = lancamentos.filter(propriedade_id=prop_id)
+    if mes:
+        try:
+            ano, mes_num = mes.split('-')
+            lancamentos = lancamentos.filter(data__year=ano, data__month=mes_num)
+        except:
+            pass
+    if cat_id:
+        lancamentos = lancamentos.filter(categoria_id=cat_id)
+
+    total_recebido = lancamentos.filter(tipo__nome__iregex=r'^(Recebimento|Entrada)$').aggregate(Sum('valor'))['valor__sum'] or 0
+    total_pago = lancamentos.filter(tipo__nome__iregex=r'^(Pagamento|Saída)$').aggregate(Sum('valor'))['valor__sum'] or 0
+    saldo = total_recebido - total_pago
+
+    context = {
+        'lancamentos': lancamentos,
+        'total_recebido': total_recebido,
+        'total_pago': total_pago,
+        'saldo': saldo,
+        'propriedades': Propriedade.objects.all(),
+        'categorias': Categoria.objects.all(),
+    }
+    return render(request, 'financeiro/relatorios.html', context)
+
+@login_required
 def exportar_pdf(request):
+    lancamentos = Lancamento.objects.all().order_by('-data')
+    prop_id = request.GET.get('propriedade')
+    mes = request.GET.get('month')
+    cat_id = request.GET.get('categoria')
+
+    if prop_id:
+        lancamentos = lancamentos.filter(propriedade_id=prop_id)
+    if mes:
+        try:
+            ano, m = mes.split('-')
+            lancamentos = lancamentos.filter(data__year=ano, data__month=m)
+        except: pass
+    if cat_id:
+        lancamentos = lancamentos.filter(categoria_id=cat_id)
+
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=18)
     elements = []
@@ -100,76 +207,19 @@ def exportar_pdf(request):
     elements.append(header_table)
 
     line_data = [['', '']]
-    line_table = Table(line_data, colWidths=[2.2*inch, 5.0*inch])
-    line_table.setStyle(TableStyle([
-        ('LINEBELOW', (1,0), (1,0), 2.5, colors.HexColor("#5d4037")),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 15),
-    ]))
+    line_table = Table(line_data, colWidths=[9*inch, 0])
+    line_table.setStyle(TableStyle([('LINEBELOW', (0,0), (0,0), 2, colors.HexColor("#5d4037")), ('BOTTOMPADDING', (0,0), (0,0), 8)]))
     elements.append(line_table)
-    elements.append(Spacer(1, 0.1 * inch))
-    
-    lancamentos = Lancamento.objects.all()
-    prop_id = request.GET.get('propriedade')
-    mes = request.GET.get('month')
-    cat_id = request.GET.get('categoria')
+    elements.append(Spacer(1, 0.2 * inch))
 
-    if prop_id:
-        lancamentos = lancamentos.filter(propriedade_id=prop_id)
-        prop_nome = Propriedade.objects.get(id=prop_id).nome
-    else:
-        prop_nome = "Todas as Propriedades"
-
-    if mes:
-        try:
-            ano_str, mes_str = mes.split('-')
-            lancamentos = lancamentos.filter(data__year=ano_str, data__month=mes_str)
-            periodo = f"{mes_str}/{ano_str}"
-        except:
-            periodo = "Geral"
-    else:
-        periodo = "Geral"
-
-    if cat_id:
-        lancamentos = lancamentos.filter(categoria_id=cat_id)
-
-    elements.append(Paragraph(f"<b>Propriedade:</b> {prop_nome} | <b>Período:</b> {periodo}", styles['Normal']))
-    elements.append(Spacer(1, 0.1 * inch))
-
-    total_recebido = 0
-    total_pago = 0
-    
-    data = [[
-        Paragraph('DATA', style_header), 
-        Paragraph('PROPRIEDADE', style_header), 
-        Paragraph('CATEGORIA / SUB', style_header), 
-        Paragraph('TIPO', style_header), 
-        Paragraph('VALOR (R$)', style_header), 
-        Paragraph('DESCRIÇÃO', style_header)
-    ]]
-    
-    for l in lancamentos:
-        val = float(l.valor)
-        is_saida = (l.tipo.nome.upper() in ['PAGAMENTO', 'SAÍDA'])
-        if is_saida:
-            total_pago += val
-        else:
-            total_recebido += val
-        
-        data.append([
-            Paragraph(l.data.strftime('%d/%m/%Y'), style_body),
-            Paragraph(l.propriedade.nome, style_body),
-            Paragraph(f"{l.categoria.nome}<br/><font size=8 color=grey>{l.subcategoria.nome}</font>", style_body),
-            Paragraph(l.tipo.nome, style_body),
-            Paragraph(f"{val:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), style_body),
-            Paragraph(l.descricao or "-", style_body)
-        ])
-
+    total_recebido = lancamentos.filter(tipo__nome__iregex=r'^(Recebimento|Entrada)$').aggregate(Sum('valor'))['valor__sum'] or 0
+    total_pago = lancamentos.filter(tipo__nome__iregex=r'^(Pagamento|Saída)$').aggregate(Sum('valor'))['valor__sum'] or 0
     saldo = total_recebido - total_pago
-
+    
     def fmt(v): return f"R$ {v:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
     
-    card_text_style = ParagraphStyle('CardText', parent=styles['Normal'], fontSize=13, textColor=colors.white, alignment=1, fontWeight='bold')
-    card_label_style = ParagraphStyle('CardLabel', parent=styles['Normal'], fontSize=8, textColor=colors.white, alignment=1)
+    card_label_style = ParagraphStyle('CardLabel', parent=styles['Normal'], fontSize=10, textColor=colors.whitesmoke, alignment=1)
+    card_text_style = ParagraphStyle('CardText', parent=styles['Normal'], fontSize=14, textColor=colors.white, alignment=1, fontName='Helvetica-Bold')
 
     dados_grafico_qs = lancamentos.filter(tipo__nome__iregex=r'^(Pagamento|Saída)$')\
                                   .values('categoria__nome')\
@@ -224,27 +274,31 @@ def exportar_pdf(request):
                 bc.bars[(0, i)].fillColor = color
         
         d.add(bc)
-
         resumo_col_data = [[criar_card_formatado(row, 2.5*inch)] for row in resumo_inner_data]
         layout_table = Table([[d, Table(resumo_col_data, colWidths=[2.7*inch], rowHeights=42)]], colWidths=[4.8*inch, 4.2*inch])
         layout_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'MIDDLE'), ('ALIGN', (0,0), (0,0), 'CENTER')]))
         elements.append(layout_table)
-
     else:
         resumo_row_data = [criar_card_formatado(row, 2.8*inch) for row in resumo_inner_data]
         layout_table = Table([resumo_row_data], colWidths=[3*inch, 3*inch, 3*inch])
         layout_table.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER'), ('VALIGN', (0,0), (-1,-1), 'MIDDLE')]))
         elements.append(layout_table)
 
-    elements.append(Spacer(1, 0.1 * inch))
+    elements.append(Spacer(1, 0.2 * inch))
+    data = [[Paragraph(h, style_header) for h in ['DATA', 'PROPRIEDADE', 'CATEGORIA', 'TIPO', 'VALOR', 'DESCRIÇÃO']]]
+    for l in lancamentos:
+        val_f = f"{l.valor:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+        data.append([
+            Paragraph(l.data.strftime('%d/%m/%Y'), style_body),
+            Paragraph(l.propriedade.nome, style_body),
+            Paragraph(f"{l.categoria.nome} - {l.subcategoria.nome}", style_body),
+            Paragraph(l.tipo.nome, style_body),
+            Paragraph(f"R$ {val_f}", style_body),
+            Paragraph(l.descricao or "-", style_body)
+        ])
 
     total_str = f"{saldo:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
-    data.append([
-        '', '', '', 
-        Paragraph('<b>SALDO FINAL:</b>', style_body), 
-        Paragraph(f'<b>R$ {total_str}</b>', style_body), 
-        ''
-    ])
+    data.append(['', '', '', Paragraph('<b>SALDO FINAL:</b>', style_body), Paragraph(f'<b>R$ {total_str}</b>', style_body), ''])
 
     t = Table(data, colWidths=[0.8*inch, 1.6*inch, 1.8*inch, 0.9*inch, 1.2*inch, 3.3*inch])
     t.setStyle(TableStyle([
@@ -257,17 +311,39 @@ def exportar_pdf(request):
         ('ROWBACKGROUNDS', (0, 1), (-1, -2), [colors.whitesmoke, colors.white]),
         ('BACKGROUND', (0, -1), (-1, -1), colors.lightgrey),
     ]))
-
     elements.append(t)
+    
     footer_style = ParagraphStyle('Footer', parent=styles['Normal'], fontSize=9, textColor=colors.grey, alignment=2)
-    data_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     elements.append(Spacer(1, 0.3 * inch))
-    elements.append(Paragraph(f"Documento emitido pelo sistema FAZENDA360 em {data_hora}", footer_style))
+    elements.append(Paragraph(f"Documento emitido pelo sistema FAZENDA360 em {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}", footer_style))
 
     doc.build(elements)
     buffer.seek(0)
     response = HttpResponse(buffer, content_type='application/pdf')
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-    filename = f"Relatorio_Fazenda360_{timestamp}.pdf"
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    response['Content-Disposition'] = f'attachment; filename="Relatorio_Fazenda360_{timestamp}.pdf"'
     return response
+
+@login_required
+def remover_lancamento(request):
+    if request.method == 'POST':
+        id = request.POST.get('id')
+        try:
+            lancamento = Lancamento.objects.get(id=id)
+            lancamento.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Método inválido'})
+
+@login_required
+def remover_propriedade(request):
+    if request.method == 'POST':
+        id = request.POST.get('id')
+        try:
+            prop = Propriedade.objects.get(id=id)
+            prop.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Método inválido'})
