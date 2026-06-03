@@ -304,7 +304,7 @@ def exportar_pdf(request):
     t.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#5d4037")),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('VALIGN', (0, 0), (-1,-1), 'MIDDLE'),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
         ('TOPPADDING', (0, 0), (-1, 0), 6),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
@@ -343,6 +343,30 @@ def remover_propriedade(request):
         try:
             prop = Propriedade.objects.get(id=id)
             prop.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Método inválido'})
+
+@login_required
+def remover_categoria(request):
+    if request.method == 'POST':
+        id = request.POST.get('id')
+        try:
+            cat = Categoria.objects.get(id=id)
+            cat.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Método inválido'})
+
+@login_required
+def remover_subcategoria(request):
+    if request.method == 'POST':
+        id = request.POST.get('id')
+        try:
+            subcat = Subcategoria.objects.get(id=id)
+            subcat.delete()
             return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
