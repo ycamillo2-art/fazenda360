@@ -6,6 +6,7 @@ urlpatterns = [
     path('cadastro/', views.cadastro, name='cadastro'),
     path('relatorios/', views.relatorios, name='relatorios'),
     path('exportar-pdf/', views.exportar_pdf, name='exportar_pdf'),
+    path('exportar-excel/', views.exportar_excel, name='exportar_excel'),
     path('remover-propriedade/', views.remover_propriedade, name='remover_propriedade'),
     path('remover-categoria/', views.remover_categoria, name='remover_categoria'),
     path('remover-subcategoria/', views.remover_subcategoria, name='remover_subcategoria'),

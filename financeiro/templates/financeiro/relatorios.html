@@ -104,8 +104,11 @@
     .btn-apply { background-color: var(--primary-brown); color: white; }
     .btn-apply:hover { background-color: #4e342e; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(93, 64, 55, 0.2); color: white; }
     
-    .btn-pdf { background-color: var(--secondary-green); color: white; }
-    .btn-pdf:hover { background-color: #1b5e20; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(46, 125, 50, 0.2); color: white; }
+    .btn-pdf { background-color: #ef4444; color: white; }
+    .btn-pdf:hover { background-color: #dc2626; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.2); color: white; }
+    
+    .btn-excel { background-color: #15803d; color: white; }
+    .btn-excel:hover { background-color: #166534; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(21, 128, 61, 0.2); color: white; }
     
     .btn-clear { background-color: #f1f5f9; color: #475569; }
     .btn-clear:hover { background-color: #e2e8f0; transform: translateY(-2px); color: #1e293b; text-decoration: none; }
@@ -243,7 +246,10 @@
                         <i class="fas fa-filter"></i> Aplicar Filtros
                     </button>
                     <button type="button" onclick="exportarPDF()" class="btn-filter-action btn-pdf mr-2">
-                        <i class="fas fa-file-pdf"></i> Gerar PDF
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button type="button" onclick="exportarExcel()" class="btn-filter-action btn-excel mr-2">
+                        <i class="fas fa-file-excel"></i> Excel
                     </button>
                     <a href="{% url 'relatorios' %}" class="btn-filter-action btn-clear mr-2">Limpar</a>
                     <a href="{% url 'index' %}" class="btn-filter-action btn-home ml-auto">
@@ -321,28 +327,48 @@
         window.location.href = "{% url 'exportar_pdf' %}?" + urlParams.toString();
     }
 
+    function exportarExcel() {
+        const urlParams = new URLSearchParams(window.location.search);
+        window.location.href = "{% url 'exportar_excel' %}?" + urlParams.toString();
+    }
+
     function removerLancamento(id) {
-        if (confirm('Tem certeza que deseja EXCLUIR este lançamento? Esta ação não pode ser desfeita.')) {
-            $.ajax({
-                url: '{% url "remover_lancamento" %}',
-                type: 'POST',
-                data: {
-                    'id': id,
-                    'csrfmiddlewaretoken': '{{ csrf_token }}'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        $('#lancamento-' + id).fadeOut(300, function() { 
-                            $(this).remove(); 
-                            // Opcional: Recarregar para atualizar os totais no topo
-                            location.reload();
-                        });
-                    } else {
-                        alert('Erro ao excluir lançamento: ' + response.error);
+        Swal.fire({
+            title: 'Excluir Lançamento?',
+            text: "Esta ação não pode ser desfeita!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d32f2f',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '{% url "remover_lancamento" %}',
+                    type: 'POST',
+                    data: {
+                        'id': id,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Excluído!',
+                                text: 'O lançamento foi removido.',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Erro!', 'Erro ao excluir: ' + response.error, 'error');
+                        }
                     }
-                }
-            });
-        }
+                });
+            }
+        });
     }
 </script>
 {% endblock %}

@@ -17,72 +17,10 @@ from reportlab.graphics.charts.piecharts import Pie
 from reportlab.graphics.charts.barcharts import VerticalBarChart
 from reportlab.graphics.charts.legends import Legend
 from django.http import HttpResponse
+import pandas as pd
 
 @login_required
-def index(request):
-    return redirect('cadastro')
-
-@login_required
-def cadastro(request):
-    if request.method == 'POST':
-        prop_id = request.POST.get('propriedade')
-        cat_id = request.POST.get('categoria')
-        subcat_id = request.POST.get('subcategoria')
-        tipo_id = request.POST.get('tipo')
-        valor_str = request.POST.get('valor', '0').replace('.', '').replace(',', '.')
-        data_str = request.POST.get('data')
-        descricao = request.POST.get('descricao')
-
-        # Handle new entries with get_or_create to avoid duplicates and integrity errors
-        try:
-            if prop_id == 'new':
-                prop, _ = Propriedade.objects.get_or_create(nome=request.POST.get('nova_propriedade'))
-                prop_id = prop.id
-            if cat_id == 'new':
-                cat, _ = Categoria.objects.get_or_create(nome=request.POST.get('nova_categoria'))
-                cat_id = cat.id
-            if subcat_id == 'new':
-                subcat, _ = Subcategoria.objects.get_or_create(
-                    nome=request.POST.get('nova_subcategoria'),
-                    categoria_id=cat_id
-                )
-                subcat_id = subcat.id
-            if tipo_id == 'new':
-                tipo, _ = Tipo.objects.get_or_create(nome=request.POST.get('novo_tipo'))
-                tipo_id = tipo.id
-
-            Lancamento.objects.create(
-                propriedade_id=prop_id,
-                categoria_id=cat_id,
-                subcategoria_id=subcat_id,
-                tipo_id=tipo_id,
-                valor=valor_str,
-                data=data_str,
-                descricao=descricao
-            )
-            messages.success(request, 'Lançamento realizado com sucesso!')
-        except Exception as e:
-            messages.error(request, f'Erro ao salvar: {str(e)}')
-
-            
-        return redirect('cadastro')
-
-    propriedades = Propriedade.objects.all()
-    categorias = Categoria.objects.all()
-    subcategorias = Subcategoria.objects.all()
-    tipos = Tipo.objects.all()
-    
-    context = {
-        'propriedades': propriedades,
-        'categorias': categorias,
-        'subcategorias': subcategorias,
-        'tipos': tipos,
-        'hoje': datetime.now().strftime('%Y-%m-%d')
-    }
-    return render(request, 'financeiro/cadastro.html', context)
-
-@login_required
-def relatorios(request):
+def exportar_excel(request):
     lancamentos = Lancamento.objects.all().order_by('-data')
     prop_id = request.GET.get('propriedade')
     mes = request.GET.get('month')
@@ -99,75 +37,35 @@ def relatorios(request):
     if cat_id:
         lancamentos = lancamentos.filter(categoria_id=cat_id)
 
-    total_recebido = lancamentos.filter(tipo__nome__iregex=r'^(Recebimento|Entrada)$').aggregate(Sum('valor'))['valor__sum'] or 0
-    total_pago = lancamentos.filter(tipo__nome__iregex=r'^(Pagamento|Saída)$').aggregate(Sum('valor'))['valor__sum'] or 0
-    saldo = total_recebido - total_pago
+    data = []
+    for l in lancamentos:
+        data.append({
+            'Data': l.data.strftime('%d/%m/%Y'),
+            'Propriedade': l.propriedade.nome,
+            'Categoria': l.categoria.nome,
+            'Subcategoria': l.subcategoria.nome,
+            'Tipo': l.tipo.nome,
+            'Valor': float(l.valor),
+            'Descrição': l.descricao or "-"
+        })
 
-    dados_grafico = lancamentos.filter(tipo__nome__iregex=r'^(Pagamento|Saída)$')\
-                               .values('categoria__nome')\
-                               .annotate(total=Sum('valor'))\
-                               .order_by('-total')
-
-    context = {
-        'lancamentos': lancamentos,
-        'propriedades': Propriedade.objects.all(),
-        'categorias': Categoria.objects.all(),
-        'total_recebido': total_recebido,
-        'total_pago': total_pago,
-        'saldo': saldo,
-        'dados_grafico': dados_grafico,
-        'filtros': {'propriedade': prop_id, 'mes': mes, 'categoria': cat_id}
-    }
-    return render(request, 'financeiro/relatorios.html', context)
-
-@login_required
-def remover_propriedade(request):
-    if request.method == 'POST':
-        prop_id = request.POST.get('id')
-        try:
-            prop = Propriedade.objects.get(id=prop_id)
-            prop.delete()
-            return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Método inválido'})
-
-@login_required
-def remover_categoria(request):
-    if request.method == 'POST':
-        cat_id = request.POST.get('id')
-        try:
-            cat = Categoria.objects.get(id=cat_id)
-            cat.delete()
-            return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Método inválido'})
-
-@login_required
-def remover_subcategoria(request):
-    if request.method == 'POST':
-        sub_id = request.POST.get('id')
-        try:
-            sub = Subcategoria.objects.get(id=sub_id)
-            sub.delete()
-            return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Método inválido'})
-
-
-@login_required
-def remover_lancamento(request):
-    if request.method == 'POST':
-        lanc_id = request.POST.get('id')
-        try:
-            lanc = Lancamento.objects.get(id=lanc_id)
-            lanc.delete()
-            return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Método inválido'})
+    df = pd.DataFrame(data)
+    
+    # Criar buffer em memória
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Lançamentos')
+    
+    buffer.seek(0)
+    
+    response = HttpResponse(
+        buffer.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    response['Content-Disposition'] = f'attachment; filename="Backup_Fazenda360_{timestamp}.xlsx"'
+    
+    return response
 
 @login_required
 def exportar_pdf(request):
