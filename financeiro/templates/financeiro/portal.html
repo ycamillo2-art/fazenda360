@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* Reset total do container do base.html para ocupar a tela inteira */
+    .main-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    .portal-page {
+        min-height: 100vh;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: url('https://sc01.alicdn.com/kf/A50dab64c2acd4195a772f129afc8e83cn.png') center/cover no-repeat;
+        position: relative;
+        padding: 60px 20px;
+        color: white;
+        overflow-x: hidden;
+    }
+
+    .portal-page::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(135deg, rgba(26, 71, 42, 0.85), rgba(10, 30, 15, 0.95)); /* Verde escuro operacional com gradiente */
+        z-index: 1;
+    }
+
+    .portal-content {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        max-width: 1100px;
+        text-align: center;
+    }
+
+    .portal-header {
+        margin-bottom: 50px;
+        animation: fadeInDown 1s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+    }
+
+    .portal-logo {
+        height: 140px;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        margin-bottom: 25px;
+        border: 2px solid rgba(255,255,255,0.1);
+    }
+
+    .portal-title {
+        font-size: 26px;
+        font-weight: 900;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        text-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        margin-bottom: 10px;
+    }
+
+    .portal-subtitle {
+        font-size: 15px;
+        color: rgba(255,255,255,0.75);
+        letter-spacing: 1px;
+        max-width: 600px;
+        margin: 0 auto;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+
+    .portal-grid {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+        animation: fadeInUp 1s cubic-bezier(0.19, 1, 0.22, 1) 0.3s forwards;
+        opacity: 0;
+    }
+
+    .portal-card {
+        background: rgba(255, 255, 255, 0.07);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 24px;
+        width: 320px;
+        padding: 45px 30px;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        text-decoration: none;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    .portal-card:hover {
+        transform: translateY(-12px);
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 30px 50px rgba(0,0,0,0.5);
+        color: white;
+    }
+
+    .card-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        margin-bottom: 25px;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .portal-card:hover .card-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .card-financeiro .card-icon {
+        color: #ffa500; /* Laranja/Ouro RD */
+        box-shadow: 0 0 25px rgba(255, 165, 0, 0.3);
+    }
+
+    .card-producao .card-icon {
+        color: #4caf50; /* Verde Lavoura */
+        box-shadow: 0 0 25px rgba(76, 175, 80, 0.3);
+    }
+
+    .card-disabled .card-icon {
+        color: #94a3b8;
+    }
+
+    .card-title {
+        font-size: 22px;
+        font-weight: 800;
+        margin-bottom: 12px;
+        letter-spacing: 1px;
+    }
+
+    .card-desc {
+        font-size: 13px;
+        color: rgba(255,255,255,0.7);
+        line-height: 1.6;
+        margin-bottom: 30px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+    }
+
+    .btn-portal-go {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.2);
+        padding: 12px 30px;
+        border-radius: 30px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        transition: all 0.3s ease;
+        margin-top: auto;
+    }
+
+    .portal-card:hover .btn-portal-go {
+        background: white;
+        color: #1a472a;
+        box-shadow: 0 8px 20px rgba(255,255,255,0.4);
+    }
+
+    /* Card Desabilitado (Almox360) */
+    .card-disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+    
+    .card-disabled:hover {
+        transform: none;
+        background: rgba(255, 255, 255, 0.07);
+        border-color: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    .tag-disabled {
+        background: rgba(148, 163, 184, 0.15);
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: #cbd5e1;
+        margin-top: auto;
+        letter-spacing: 1px;
+    }
+
+    @keyframes fadeInDown {
+        from { transform: translateY(-40px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+        from { transform: translateY(40px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+        .portal-title { font-size: 20px; }
+        .portal-subtitle { font-size: 13px; }
+        .portal-grid { gap: 20px; }
+        .portal-card { width: 100%; max-width: 340px; padding: 35px 25px; }
+    }
+</style>
+
+<div class="portal-page">
+    <div class="portal-content">
+        <div class="portal-header">
+            <img src="https://sc01.alicdn.com/kf/Af476ff7174de4cf79ad778fe46cc2de7Q.jpg" alt="RD CONILON LOGO" class="portal-logo">
+            <h1 class="portal-title">PORTAL DE SISTEMAS RD</h1>
+            <p class="portal-subtitle">Acesse de forma centralizada os módulos operacionais da fazenda</p>
+        </div>
+
+        <div class="portal-grid">
+            <!-- Fazenda360 -->
+            <a href="{% url 'cadastro' %}" class="portal-card card-financeiro">
+                <div class="card-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="card-title">Fazenda360</h3>
+                <p class="card-desc">Controle financeiro completo, lançamentos de entradas, saídas e relatórios analíticos de safra.</p>
+                <span class="btn-portal-go">Acessar Sistema</span>
+            </a>
+
+            <!-- Cafe-Control -->
+            <a href="https://cafe-control.onrender.com" target="_blank" class="portal-card card-producao">
+                <div class="card-icon">
+                    <i class="fas fa-seedling"></i>
+                </div>
+                <h3 class="card-title">CaféControl</h3>
+                <p class="card-desc">Controle de produção de café maduro, monitoramento de colheita, pesagem e secagem.</p>
+                <span class="btn-portal-go">Acessar Painel</span>
+            </a>
+
+            <!-- Almox360 (Desabilitado) -->
+            <div class="portal-card card-disabled">
+                <div class="card-icon">
+                    <i class="fas fa-boxes-packing"></i>
+                </div>
+                <h3 class="card-title">Almox360</h3>
+                <p class="card-desc">Gestão inteligente de almoxarifado, controle de estoque de insumos químicos, adubos e ferramentas.</p>
+                <span class="tag-disabled">Em Breve</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

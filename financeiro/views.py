@@ -72,9 +72,8 @@ def exportar_excel(request):
     
     return response
 
-@login_required
 def index(request):
-    return redirect('cadastro')
+    return render(request, 'financeiro/portal.html')
 
 @login_required
 def cadastro(request):
