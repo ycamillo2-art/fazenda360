@@ -292,6 +292,55 @@
         /* Feedback visual para valores na lista */
         .text-entrada { color: #15803d !important; font-weight: bold; }
         .text-saida { color: #b91c1c !important; font-weight: bold; }
+
+        /* User Session Style */
+        .user-controls {
+            background: #fff;
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+        .user-avatar-small {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-brown), #8d6e63);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 900;
+            box-shadow: 0 4px 10px rgba(93, 64, 55, 0.2);
+            border: 2px solid white;
+        }
+        .user-name-small { 
+            font-size: 12px; 
+            font-weight: 800; 
+            color: var(--primary-brown); 
+            text-transform: uppercase; 
+        }
+        .user-status-dot { 
+            font-size: 9px; 
+            font-weight: 700; 
+            color: #94a3b8; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 5px;
+        }
+        .user-status-dot::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            background: #4ade80;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px #4ade80;
+        }
         
         .btn-back {
             background-color: #f1f5f9;
@@ -478,9 +527,10 @@
             
             {% if user.is_authenticated %}
             <div class="user-controls" style="display: flex; align-items: center; gap: 15px;">
+                <div class="user-avatar-small d-none d-md-flex">{% if user.first_name %}{{ user.first_name|first|upper }}{% else %}{{ user.username|first|upper }}{% endif %}</div>
                 <div class="text-right d-none d-md-block">
-                    <div style="font-size: 12px; font-weight: bold; color: var(--primary-brown);">{% if user.first_name %}{{ user.first_name|upper }}{% else %}{{ user.username|upper }}{% endif %}</div>
-                    <div style="font-size: 10px; color: #94a3b8;">Sessão Ativa</div>
+                    <div class="user-name-small">{% if user.first_name %}{{ user.first_name|upper }}{% else %}{{ user.username|upper }}{% endif %}</div>
+                    <div class="user-status-dot">Sessão Ativa</div>
                 </div>
                 <!-- Botão Portal Unificado (Única Saída) -->
                 <button type="button" onclick="confirmarSaidaPortal()" class="btn btn-outline-primary btn-sm" style="border-radius: 8px; padding: 8px 15px; font-weight: bold; border-color: var(--primary-brown); color: var(--primary-brown);">
