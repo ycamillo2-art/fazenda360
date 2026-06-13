@@ -482,19 +482,41 @@
                     <div style="font-size: 12px; font-weight: bold; color: var(--primary-brown);">{{ user.username|upper }}</div>
                     <div style="font-size: 10px; color: #94a3b8;">Sessão Ativa</div>
                 </div>
-                <!-- Botão Portal com Logout Automático -->
-                <form action="{% url 'logout' %}" method="post" style="display: inline;" id="portalLogoutForm">
+                <!-- Botão Portal Unificado (Única Saída) -->
+                <button type="button" onclick="confirmarSaidaPortal()" class="btn btn-outline-primary btn-sm" style="border-radius: 8px; padding: 8px 15px; font-weight: bold; border-color: var(--primary-brown); color: var(--primary-brown);">
+                    <i class="fas fa-th-large"></i> Portal
+                </button>
+                <form action="{% url 'logout' %}" method="post" id="portalLogoutForm" style="display: none;">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-primary btn-sm" style="border-radius: 8px; padding: 8px 15px; font-weight: bold; border-color: var(--primary-brown); color: var(--primary-brown);">
-                        <i class="fas fa-th-large"></i> Portal
-                    </button>
                 </form>
-                <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius: 8px; padding: 8px 15px; font-weight: bold;">
-                        <i class="fas fa-sign-out-alt"></i> Sair
-                    </button>
-                </form>
+
+                <script>
+                    function confirmarSaidaPortal() {
+                        Swal.fire({
+                            title: 'Deseja voltar ao Portal?',
+                            text: "Sua sessão será encerrada com segurança.",
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#2e7d32',
+                            cancelButtonColor: '#d32f2f',
+                            confirmButtonText: 'Sim, encerrar',
+                            cancelButtonText: 'Continuar aqui'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                Swal.fire({
+                                    title: 'Salvando registros...',
+                                    text: 'Obrigado pelo trabalho hoje, {{ user.username|upper }}!',
+                                    icon: 'success',
+                                    timer: 2500,
+                                    showConfirmButton: false,
+                                    timerProgressBar: true
+                                }).then(() => {
+                                    document.getElementById('portalLogoutForm').submit();
+                                });
+                            }
+                        });
+                    }
+                </script>
             </div>
             {% endif %}
         </div>
