@@ -7,6 +7,7 @@ reportlab
 django-humanize
 pillow
 requests
+beautifulsoup4
 pandas
 openpyxl
 django==6.0.4
