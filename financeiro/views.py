@@ -72,8 +72,39 @@ def exportar_excel(request):
     
     return response
 
+import json
+import os
+import time
+import subprocess
+
 def index(request):
-    return render(request, 'financeiro/portal.html')
+    quotes_data = None
+    quotes_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'coffee_quotes.json')
+    
+    # Lógica de Auto-Update (se o arquivo tiver mais de 10 min ou não existir)
+    try:
+        should_update = False
+        if not os.path.exists(quotes_path):
+            should_update = True
+        else:
+            file_age = time.time() - os.path.getmtime(quotes_path)
+            if file_age > 600: # 10 minutos
+                should_update = True
+        
+        if should_update:
+            script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fetch_quotes.py')
+            subprocess.Popen(['python', script_path]) # Roda em background para não travar o carregamento
+    except:
+        pass
+
+    try:
+        if os.path.exists(quotes_path):
+            with open(quotes_path, 'r', encoding='utf-8') as f:
+                quotes_data = json.load(f)
+    except:
+        pass
+    
+    return render(request, 'financeiro/portal.html', {'quotes': quotes_data})
 
 @login_required
 def cadastro(request):

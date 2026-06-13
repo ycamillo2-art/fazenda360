@@ -45,3 +45,14 @@ class Lancamento(models.Model):
 
     class Meta:
         ordering = ['-data']
+
+class Cotacao(models.Model):
+    tipo = models.CharField(max_length=50) # Conilon 7, 7/8, 8
+    preco = models.CharField(max_length=50)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.tipo}: {self.preco}"
+
+    class Meta:
+        verbose_name_plural = "Cotações"

@@ -144,6 +144,11 @@
         box-shadow: 0 0 25px rgba(21, 101, 192, 0.3);
     }
 
+    .card-quotes .card-icon {
+        color: #fbc02d; /* Amarelo/Ouro Mercado */
+        box-shadow: 0 0 25px rgba(251, 192, 45, 0.3);
+    }
+
     .card-disabled .card-icon {
         color: #94a3b8;
     }
@@ -266,6 +271,28 @@
                 <p class="card-desc">Gestão inteligente de almoxarifado, controle de estoque de insumos químicos, adubos e ferramentas.</p>
                 <span class="btn-portal-go">Acessar Sistema</span>
             </a>
+
+            <!-- Cotação Mercado -->
+            <div class="portal-card card-quotes">
+                <div class="card-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="card-title">Cotação Café</h3>
+                <div class="card-desc" style="flex-direction: column; gap: 5px; height: auto; min-height: 60px;">
+                    {% if quotes %}
+                        {% for tipo, preco in quotes.quotes.items %}
+                            <div style="display: flex; justify-content: space-between; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px;">
+                                <span style="font-weight: bold;">{{ tipo }}</span>
+                                <span style="color: #fbc02d;">{{ preco }}</span>
+                            </div>
+                        {% endfor %}
+                        <div style="font-size: 9px; opacity: 0.5; margin-top: 5px;">Atualizado: {{ quotes.updated_at }}</div>
+                    {% else %}
+                        <p>Buscando cotações atualizadas...</p>
+                    {% endif %}
+                </div>
+                <a href="https://cooabriel.coop.br/cotacao-do-dia" target="_blank" class="btn-portal-go" style="margin-top: 15px;">Ver na Cooabriel</a>
+            </div>
         </div>
     </div>
 </div>
