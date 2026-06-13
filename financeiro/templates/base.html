@@ -482,6 +482,10 @@
                     <div style="font-size: 12px; font-weight: bold; color: var(--primary-brown);">{{ user.username|upper }}</div>
                     <div style="font-size: 10px; color: #94a3b8;">Sessão Ativa</div>
                 </div>
+                <!-- Botão Portal Unificado -->
+                <a href="{% url 'index' %}" class="btn btn-outline-primary btn-sm" style="border-radius: 8px; padding: 8px 15px; font-weight: bold; border-color: var(--primary-brown); color: var(--primary-brown);">
+                    <i class="fas fa-th-large"></i> Portal
+                </a>
                 <form action="{% url 'logout' %}" method="post" style="display: inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius: 8px; padding: 8px 15px; font-weight: bold;">
