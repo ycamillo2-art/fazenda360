@@ -165,7 +165,8 @@ def cadastro(request):
 
 @login_required
 def relatorios(request):
-    lancamentos = Lancamento.objects.all().order_by('-data')
+    lancamentos = Lancamento.objects.select_related('propriedade', 'categoria', 'subcategoria', 'tipo').all().order_by('-data')
+    
     prop_id = request.GET.get('propriedade')
     mes = request.GET.get('month')
     cat_id = request.GET.get('categoria')
