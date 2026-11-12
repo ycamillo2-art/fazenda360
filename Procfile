@@ -1,1 +1,1 @@
-web: gunicorn fazenda360.wsgi
+web: python manage.py migrate && python manage.py loaddata backup_dados_reais.json || true && gunicorn fazenda360.wsgi
