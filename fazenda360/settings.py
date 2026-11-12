@@ -27,7 +27,12 @@ ALLOWED_HOSTS = ['*']
 if os.environ.get('ALLOWED_HOSTS'):
     ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
 
-CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com', 'https://fazenda360-deploy-v1.onrender.com']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'https://fazenda360-deploy-v1.onrender.com',
+    'https://*.up.railway.app',
+    'https://*.railway.app'
+]
 
 # Application definition
 
